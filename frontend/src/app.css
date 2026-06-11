@@ -1,0 +1,250 @@
+/* ═══════════════════════════════════════════════════════════════
+   DOSTALGIA — Phosphor Dark Theme
+   Inspired by classic green-screen CRT monitors (IBM 5151)
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Phosphor greens — from brightest glow to darkest trace */
+  --phosphor: #33ff33;
+  --phosphor-glow: #66ff66;
+  --phosphor-dim: #22aa22;
+  --phosphor-dark: #116611;
+  --phosphor-burn: #0a330a;
+
+  /* Backgrounds */
+  --bg: #0a0a0a;
+  --bg-elevated: #111111;
+  --surface: #1a1a1a;
+  --surface-hover: #222222;
+  --surface-active: #2a2a2a;
+
+  /* Borders */
+  --border: #2a2a2a;
+  --border-glow: #33ff3340;
+
+  /* Text */
+  --text: #cccccc;
+  --text-bright: #e8e8e8;
+  --text-dim: #777777;
+
+  /* Sizing */
+  --max-width: 1200px;
+  --header-height: 64px;
+  --radius: 8px;
+  --radius-sm: 4px;
+
+  /* Typography */
+  --font-mono: "Press Start 2P", monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════════════════════════════ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+  width: 100vw;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+a {
+  color: var(--phosphor);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--phosphor-glow);
+  text-shadow: 0 0 8px var(--phosphor-glow);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TYPOGRAPHY
+   ═══════════════════════════════════════════════════════════════ */
+h1, h2, h3, h4 {
+  color: var(--text-bright);
+  font-weight: 700;
+  line-height: 1.3;
+}
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.2rem; }
+
+/* ═══════════════════════════════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════════════════════════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 1px solid var(--phosphor-dim);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--phosphor);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn:hover {
+  background: var(--phosphor-burn);
+  border-color: var(--phosphor);
+  box-shadow: 0 0 12px var(--phosphor-dark);
+}
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: var(--phosphor-dark);
+  border-color: var(--phosphor);
+  color: var(--phosphor-glow);
+}
+.btn-primary:hover {
+  background: var(--phosphor-dim);
+  color: var(--bg);
+}
+
+.btn-danger {
+  border-color: #cc3333;
+  color: #cc3333;
+}
+.btn-danger:hover {
+  background: #331111;
+  border-color: #ff4444;
+  color: #ff4444;
+  box-shadow: 0 0 12px #331111;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INPUTS
+   ═══════════════════════════════════════════════════════════════ */
+input,
+textarea,
+select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 10px 14px;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  transition: border-color 0.15s;
+}
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--phosphor-dim);
+  box-shadow: 0 0 0 3px var(--border-glow);
+}
+input::placeholder {
+  color: var(--text-dim);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LAYOUT UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+@media (max-width: 640px) {
+  .container { padding: 0 12px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE TOUCH ADJUSTMENTS
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  .btn { padding: 8px 14px; font-size: 0.85rem; min-height: 40px; }
+  input, textarea, select { font-size: 16px; } /* prevents iOS zoom */
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SCROLLBAR
+   ═══════════════════════════════════════════════════════════════ */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-hover);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--phosphor-dark);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════════════ */
+@keyframes scanline {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(4px); }
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.97; }
+}
+
+@keyframes phosphor-pulse {
+  0%, 100% { text-shadow: 0 0 4px var(--phosphor-dim); }
+  50% { text-shadow: 0 0 12px var(--phosphor), 0 0 24px var(--phosphor-dark); }
+}
+
+/* Subtle CRT effect on hover cards */
+.crt-hover {
+  position: relative;
+}
+.crt-hover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(51, 255, 51, 0.015) 2px,
+    rgba(51, 255, 51, 0.015) 4px
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.crt-hover:hover::after {
+  opacity: 1;
+}

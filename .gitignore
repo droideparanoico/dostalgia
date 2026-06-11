@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Environment — secrets
+.env
+.env.local
+
+# Built output
+frontend/dist/
+dist/
+
+# Maven / Java
+target/
+*.class
+*.jar
+*.war
+
+# Runtime data
+data/games/*
+data/artwork/*
+data/saves/*
+!data/games/.gitkeep
+!data/artwork/.gitkeep
+!data/saves/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Test/upload artifacts
+*.zip
+*.ZIP
+*.jsdos
+*.JSDOS
+
+# OS
+.DS_Store
+Thumbs.db

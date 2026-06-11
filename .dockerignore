@@ -1,0 +1,15 @@
+# Prevent local build artifacts from leaking into Docker
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+
+# Runtime data
+data/
+
+# IDE
+.vscode/
+.idea/
+
+# Binary
+dostalgia

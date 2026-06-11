@@ -1,0 +1,14 @@
+services:
+  dostalgia:
+    image: droideparanoico/dostalgia
+    container_name: dostalgia
+    restart: unless-stopped
+    ports:
+      - "8765:8765"
+    volumes:
+      # Configure here your data directory if you want persistence.
+      - ./data:/data
+    env_file:
+      - .env
+    environment:
+      - DOSTALGIA_DATA_DIR=/data
