@@ -1,0 +1,60 @@
+# This workflow builds and deploys DOStalgia whenever code is pushed to main.
+# The runner has Docker socket access so it can manage containers on the host.
+# See: https://docs.gitea.com/usage/actions
+
+name: Build & Deploy
+run-name: Build ${{ gitea.sha.substring(0, 7) }}
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  IMAGE_NAME: dostalgia
+  CONTAINER_NAME: dostalgia
+  DATA_VOLUME: /mnt/cache/appdata/dostalgia
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.IMAGE_NAME }}:${{ gitea.sha }} .
+          docker tag ${{ env.IMAGE_NAME }}:${{ gitea.sha }} ${{ env.IMAGE_NAME }}:latest
+
+      - name: Deploy container
+        run: |
+          docker stop ${{ env.CONTAINER_NAME }} 2>/dev/null || true
+          docker rm ${{ env.CONTAINER_NAME }} 2>/dev/null || true
+          docker run -d \
+            --name ${{ env.CONTAINER_NAME }} \
+            --restart unless-stopped \
+            --network dockernet \
+            -p 8765:8765/tcp \
+            -v ${{ env.DATA_VOLUME }}:/data \
+            -e TWITCH_CLIENT_ID='${{ secrets.TWITCH_CLIENT_ID }}' \
+            -e TWITCH_CLIENT_SECRET='${{ secrets.TWITCH_CLIENT_SECRET }}' \
+            ${{ env.IMAGE_NAME }}:latest
+
+      - name: Verify container is running
+        run: |
+          sleep 5
+          STATUS=$(docker inspect -f '{{.State.Status}}' ${{ env.CONTAINER_NAME }})
+          if [ "$STATUS" = "running" ]; then
+            echo "✅ DOStalgia container is running"
+            echo "--- last logs ---"
+            docker logs ${{ env.CONTAINER_NAME }} --tail 5
+            echo "✅ DOStalgia deployed!"
+          else
+            echo "❌ Container status: $STATUS"
+            docker logs ${{ env.CONTAINER_NAME }} --tail 30
+            exit 1
+          fi
+
+      - name: Clean up old images
+        run: docker image prune -f --filter "until=24h"
