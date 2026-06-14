@@ -40,3 +40,6 @@ data/saves/*
 # OS
 .DS_Store
 Thumbs.db
+
+# Gitea
+.gitea/

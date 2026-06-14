@@ -1,5 +1,5 @@
 <script>
-  let { onUploadClick = () => {} } = $props();
+  let { onUploadClick = () => {}, hideUpload = false } = $props();
 </script>
 
 <header class="header">
@@ -17,7 +17,9 @@
       <span class="logo-text">DOSTALGIA</span>
     </a>
     <nav>
-      <button class="btn" onclick={onUploadClick}>+ Upload</button>
+      {#if !hideUpload}
+        <button class="btn" onclick={onUploadClick}>+ Upload</button>
+      {/if}
     </nav>
   </div>
 </header>

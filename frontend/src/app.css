@@ -98,7 +98,8 @@ h3 { font-size: 1.2rem; }
 /* ═══════════════════════════════════════════════════════════════
    BUTTONS
    ═══════════════════════════════════════════════════════════════ */
-.btn {
+/* Only targets DOStalgia buttons, not js-dos emulator buttons inside .dos-container */
+.btn.btn:not(.dos-container .btn) {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -111,32 +112,36 @@ h3 { font-size: 1.2rem; }
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
+  text-transform: none;
+  height: auto;
+  min-height: 0;
+  line-height: normal;
   transition: all 0.15s ease;
 }
-.btn:hover {
+.btn.btn:not(.dos-container .btn):hover {
   background: var(--phosphor-burn);
   border-color: var(--phosphor);
   box-shadow: 0 0 12px var(--phosphor-dark);
 }
-.btn:active {
+.btn.btn:not(.dos-container .btn):active {
   transform: scale(0.97);
 }
 
-.btn-primary {
+.btn-primary.btn-primary:not(.dos-container .btn) {
   background: var(--phosphor-dark);
   border-color: var(--phosphor);
   color: var(--phosphor-glow);
 }
-.btn-primary:hover {
+.btn-primary.btn-primary:not(.dos-container .btn):hover {
   background: var(--phosphor-dim);
   color: var(--bg);
 }
 
-.btn-danger {
+.btn-danger.btn-danger:not(.dos-container .btn) {
   border-color: #cc3333;
   color: #cc3333;
 }
-.btn-danger:hover {
+.btn-danger.btn-danger:not(.dos-container .btn):hover {
   background: #331111;
   border-color: #ff4444;
   color: #ff4444;
@@ -187,7 +192,7 @@ input::placeholder {
 @media (max-width: 640px) {
   h1 { font-size: 1.5rem; }
   h2 { font-size: 1.25rem; }
-  .btn { padding: 8px 14px; font-size: 0.85rem; min-height: 40px; }
+  .btn.btn:not(.dos-container .btn) { padding: 8px 14px; font-size: 0.85rem; min-height: 40px; }
   input, textarea, select { font-size: 16px; } /* prevents iOS zoom */
 }
 

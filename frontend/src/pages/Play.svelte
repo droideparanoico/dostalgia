@@ -134,7 +134,7 @@
         ← {isSetup ? "Back" : game.title}
       </button>
       {#if running}
-        <button class="btn stop-btn" onclick={stopEmulator}>⏹ Stop</button>
+        <button class="btn btn-danger" onclick={stopEmulator}>⏹ Stop</button>
       {/if}
     {/if}
   </div>
@@ -211,14 +211,6 @@
     font-family: var(--font-sans);
   }
   .link-button:hover { color: var(--phosphor); }
-  .stop-btn {
-    border-color: #cc3333;
-    color: #ff4444;
-  }
-  .stop-btn:hover {
-    background: #331111;
-    box-shadow: 0 0 12px #331111;
-  }
 
   /* Emulator canvas — always mounted */
   .dos-container {

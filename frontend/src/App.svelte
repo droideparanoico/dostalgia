@@ -43,7 +43,7 @@
   });
 </script>
 
-<Header onUploadClick={() => uploadTriggered++} />
+<Header onUploadClick={() => uploadTriggered++} hideUpload={route !== "/"} />
 
 <main class="container">
   {#if route === "/"}
