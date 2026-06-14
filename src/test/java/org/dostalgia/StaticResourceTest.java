@@ -23,7 +23,7 @@ class StaticResourceTest {
         assertInstanceOf(Map.class, entity);
         Map<?, ?> map = (Map<?, ?>) entity;
         assertEquals("ok", map.get("status"));
-        assertEquals("0.1.0", map.get("version"));
+        assertEquals("0.1.1", map.get("version"));
     }
 
     @Test

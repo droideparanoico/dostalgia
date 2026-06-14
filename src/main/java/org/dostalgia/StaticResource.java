@@ -53,7 +53,7 @@ public class StaticResource {
     @GET
     @jakarta.ws.rs.Path("/api/health")
     public Response health() {
-        return Response.ok(Map.of("status", "ok", "version", "0.1.0")).build();
+        return Response.ok(Map.of("status", "ok", "version", "0.1.1")).build();
     }
 
     private String guessContentType(String name) {
