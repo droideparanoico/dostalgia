@@ -13,7 +13,7 @@ A nostalgic DOS game hub. Upload your old DOS games, auto-scrape artwork and met
 ### 🎮 Play in the browser
 Every uploaded game is packaged into a `.jsdos` bundle — a standard ZIP with embedded DOSBox configuration. When you hit **Play**, js-dos v8 is loaded from CDN and starts the emulator instantly in your browser. No plugins, no native installs.
 
-**Save states are automatic** — js-dos persists your game progress to the browser's storage. Come back anytime and pick up where you left off.
+**Saves are automatic** — in-game saves (js-dos FS changes) are persisted to the server (`data/saves/`). Come back from any browser or device and pick up where you left off.
 
 ### 📦 Handles any file structure
 DOS games come in all shapes. DOStalgia handles them transparently:
@@ -131,4 +131,4 @@ java -jar target/quarkus-app/quarkus-run.jar
 - **Frontend**: Svelte 5 SPA with hash-based routing
 - **Emulation**: js-dos v8 loaded from CDN, runs DOSBox in WebAssembly
 - **Storage**: JSON-per-game under `/data/games/{id}/game.json`
-- **Saves**: Browser localStorage / indexedDB (managed by js-dos)
+- **Saves**: `data/saves/` on the server (js-dos FS-changes bundles, synced via `/api/games/{id}/saves`)

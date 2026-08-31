@@ -10,6 +10,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
@@ -155,6 +156,68 @@ public class GameController {
                 .build();
         } catch (NoSuchFileException e) {
             return Response.status(404).entity(Map.of("error", "Game not found")).build();
+        } catch (Exception e) {
+            return Response.serverError().entity(Map.of("error", e.getMessage())).build();
+        }
+    }
+
+    /**
+     * Stream the saved js-dos FS-changes bundle (in-game saves) for a game.
+     * 404 when the game or the save doesn't exist.
+     */
+    @GET
+    @Path("/{id}/saves")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response getSave(@PathParam("id") String id) {
+        try {
+            svc.load(id);
+            byte[] data = svc.loadSave(id);
+            if (data == null) {
+                return Response.status(404).entity(Map.of("error", "No save found")).build();
+            }
+            return Response.ok(data).build();
+        } catch (NoSuchFileException e) {
+            return Response.status(404).entity(Map.of("error", "Game not found")).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(400).entity(Map.of("error", e.getMessage())).build();
+        } catch (Exception e) {
+            return Response.serverError().entity(Map.of("error", e.getMessage())).build();
+        }
+    }
+
+    /** Persist the js-dos FS-changes bundle (in-game saves) for a game. Body = raw bundle bytes. */
+    @PUT
+    @Path("/{id}/saves")
+    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    public Response putSave(@PathParam("id") String id, byte[] data) {
+        try {
+            svc.load(id);
+            if (data == null || data.length == 0) {
+                return Response.status(400).entity(Map.of("error", "Empty save data")).build();
+            }
+            svc.saveChanges(id, data);
+            return Response.ok(Map.of("status", "saved")).build();
+        } catch (NoSuchFileException e) {
+            return Response.status(404).entity(Map.of("error", "Game not found")).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(400).entity(Map.of("error", e.getMessage())).build();
+        } catch (Exception e) {
+            return Response.serverError().entity(Map.of("error", e.getMessage())).build();
+        }
+    }
+
+    /** Delete the saved js-dos FS-changes for a game (fresh start on next launch). */
+    @DELETE
+    @Path("/{id}/saves")
+    public Response deleteSave(@PathParam("id") String id) {
+        try {
+            svc.load(id);
+            svc.deleteSave(id);
+            return Response.ok(Map.of("status", "deleted")).build();
+        } catch (NoSuchFileException e) {
+            return Response.status(404).entity(Map.of("error", "Game not found")).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(400).entity(Map.of("error", e.getMessage())).build();
         } catch (Exception e) {
             return Response.serverError().entity(Map.of("error", e.getMessage())).build();
         }

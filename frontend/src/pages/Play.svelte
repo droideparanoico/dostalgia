@@ -1,5 +1,5 @@
 <script>
-  import { getGame, bundleUrl, setupBundleUrl } from "../lib/api.js";
+  import { getGame, bundleUrl, setupBundleUrl, pullSaves, pushSaves, deleteSaves } from "../lib/api.js";
   import { push } from "../lib/router.js";
 
   let { id } = $props();
@@ -70,7 +70,26 @@
     try {
       const url = isSetup ? setupBundleUrl(game) : bundleUrl(game);
       if (!url || !window.Dos) throw new Error("Failed to resolve game bundle");
-      dosCI = await window.Dos(dosContainer, { url });
+      dosCI = window.Dos(dosContainer, {
+        url,
+        autoSave: true,
+        // Server-backed FS persistence: in-game saves survive sessions and
+        // follow the player across browsers/devices. Both normal and setup
+        // mode share one save set so SETUP.EXE changes carry over.
+        fsChanges: {
+          urlToKey: async () => String(game.id),
+          pull: async (key) => {
+            try {
+              return await pullSaves(key);
+            } catch (e) {
+              console.warn("Failed to load saves:", e);
+              return null;
+            }
+          },
+          push: (key, data) => pushSaves(key, data),
+          delete: (key) => deleteSaves(key),
+        },
+      });
       running = true;
     } catch (e) {
       error = e.message;
@@ -78,7 +97,12 @@
     booting = false;
   }
 
-  function stopEmulator() {
+  async function stopEmulator() {
+    // Persist FS changes before teardown — the reload below kills the
+    // emulator worker, so the save request must fire first (best effort).
+    if (dosCI?.save) {
+      try { await dosCI.save(); } catch (_) {}
+    }
     // Force full page reload which terminates all workers, AudioContexts
     // and WASM threads. Hash is preserved so the SPA routes correctly.
     window.location.hash = `#/game/${game.id}`;
@@ -107,8 +131,12 @@
   $effect(() => {
     return () => {
       if (dosCI) {
-        try { dosCI.exit(); } catch (_) {}
+        // Persist FS changes, then kill the emulation (DosProps.stop()).
+        const props = dosCI;
         dosCI = null;
+        Promise.resolve(props.save?.()).catch(() => {}).finally(() => {
+          try { props.stop?.(); } catch (_) {}
+        });
       }
       if (dosContainer) {
         dosContainer.innerHTML = "";
@@ -171,7 +199,7 @@
           <p class="save-hint">⚙️ Configure controls, then exit SETUP to save</p>
         {:else}
           <p>Starting emulator...</p>
-          <p class="save-hint">💾 Game saves are stored automatically</p>
+          <p class="save-hint">💾 Game saves are stored on the server</p>
         {/if}
       {:else if error}
         <div class="overlay-icon">⚠️</div>

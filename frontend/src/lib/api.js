@@ -90,6 +90,41 @@ export function downloadGame(id) {
   window.open(`${BASE}/api/games/${id}/download`, '_blank');
 }
 
+/** Pull saved js-dos FS changes (in-game saves) — Uint8Array or null if none */
+export async function pullSaves(gameId) {
+  const res = await fetch(`${BASE}/api/games/${gameId}/saves`);
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  return new Uint8Array(await res.arrayBuffer());
+}
+
+/** Push js-dos FS changes (in-game saves) to the server */
+export async function pushSaves(gameId, data) {
+  const res = await fetch(`${BASE}/api/games/${gameId}/saves`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/octet-stream" },
+    body: data,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+/** Delete server-side saves for a game */
+export async function deleteSaves(gameId) {
+  const res = await fetch(`${BASE}/api/games/${gameId}/saves`, { method: "DELETE" });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
 /** Check IGDB status */
 export async function igdbStatus() {
   const res = await fetch(`${BASE}/api/igdb/status`);

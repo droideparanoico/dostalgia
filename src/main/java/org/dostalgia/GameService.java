@@ -42,13 +42,16 @@ public class GameService implements GameStore {
 
     Path gamesDir;
 
+    Path savesDir;
+
     @PostConstruct
     void init() {
         gamesDir = Path.of(dataDir, "games");
+        savesDir = Path.of(dataDir, "saves");
         try {
             Files.createDirectories(gamesDir);
             Files.createDirectories(Path.of(dataDir, "artwork"));
-            Files.createDirectories(Path.of(dataDir, "saves"));
+            Files.createDirectories(savesDir);
         } catch (IOException e) {
             throw new RuntimeException("Cannot create data directories", e);
         }
@@ -122,9 +125,45 @@ public class GameService implements GameStore {
     /** Delete a game and all its files. */
     public void delete(String id) throws IOException {
         FileUtils.deleteDirectory(gameDir(id));
+        deleteSave(id);
         // Clean up old flat .jsdos locations (pre-game-dir layout — backward compat)
         Files.deleteIfExists(gamesDir.resolve(id + ".jsdos"));
         Files.deleteIfExists(gamesDir.resolve(id + ".setup.jsdos"));
+    }
+
+    /** Path of the js-dos FS-changes save file for a game (in-game saves). */
+    public Path savePath(String id) {
+        assertSafeId(id);
+        return savesDir.resolve(id + ".fschanges.jsdos");
+    }
+
+    /** Load the saved js-dos FS changes for a game, or null if none exist. */
+    public byte[] loadSave(String id) throws IOException {
+        Path path = savePath(id);
+        if (!Files.exists(path)) {
+            return null;
+        }
+        return Files.readAllBytes(path);
+    }
+
+    /** Persist js-dos FS changes for a game (atomic write). */
+    public void saveChanges(String id, byte[] data) throws IOException {
+        Path path = savePath(id);
+        Path tmp = path.resolveSibling(path.getFileName() + ".tmp");
+        Files.write(tmp, data);
+        Files.move(tmp, path, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+    }
+
+    /** Delete saved js-dos FS changes for a game. Returns true if a save existed. */
+    public boolean deleteSave(String id) throws IOException {
+        return Files.deleteIfExists(savePath(id));
+    }
+
+    /** Reject ids that could escape the saves directory. */
+    private static void assertSafeId(String id) {
+        if (id == null || id.contains("/") || id.contains("\\") || id.contains("..")) {
+            throw new IllegalArgumentException("Invalid game id: " + id);
+        }
     }
 
     /** Sanitize a string for use as a game directory ID. */

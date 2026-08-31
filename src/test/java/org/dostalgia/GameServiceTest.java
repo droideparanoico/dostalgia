@@ -241,6 +241,86 @@ class GameServiceTest {
         assertFalse(Files.exists(tempDir.resolve("games/game1.setup.jsdos")));
     }
 
+    // -- js-dos FS-changes saves tests --
+
+    @Test
+    void saveChanges_andLoadSave_roundTrip(@TempDir Path tempDir) throws Exception {
+        GameService svc = new GameService();
+        svc.dataDir = tempDir.toString();
+        svc.init();
+
+        svc.save(new Game("game1", "Game One"));
+        byte[] data = "PK\u0003\u0004fake-bundle".getBytes();
+        svc.saveChanges("game1", data);
+
+        assertArrayEquals(data, svc.loadSave("game1"));
+        assertEquals(
+            tempDir.resolve("saves/game1.fschanges.jsdos"),
+            svc.savePath("game1"));
+    }
+
+    @Test
+    void loadSave_noSave_returnsNull(@TempDir Path tempDir) throws Exception {
+        GameService svc = new GameService();
+        svc.dataDir = tempDir.toString();
+        svc.init();
+
+        assertNull(svc.loadSave("game1"));
+    }
+
+    @Test
+    void saveChanges_overwritesPreviousWithoutLeavingTmp(@TempDir Path tempDir) throws Exception {
+        GameService svc = new GameService();
+        svc.dataDir = tempDir.toString();
+        svc.init();
+
+        svc.saveChanges("game1", "first".getBytes());
+        svc.saveChanges("game1", "second".getBytes());
+
+        assertArrayEquals("second".getBytes(), svc.loadSave("game1"));
+        try (var stream = Files.list(tempDir.resolve("saves"))) {
+            assertEquals(1, stream.count());
+        }
+    }
+
+    @Test
+    void deleteSave_removesFileAndReportsExistence(@TempDir Path tempDir) throws Exception {
+        GameService svc = new GameService();
+        svc.dataDir = tempDir.toString();
+        svc.init();
+
+        svc.saveChanges("game1", "data".getBytes());
+        assertTrue(svc.deleteSave("game1"));
+        assertNull(svc.loadSave("game1"));
+        assertFalse(svc.deleteSave("game1"));
+    }
+
+    @Test
+    void savePath_rejectsPathTraversal(@TempDir Path tempDir) throws Exception {
+        GameService svc = new GameService();
+        svc.dataDir = tempDir.toString();
+        svc.init();
+
+        assertThrows(IllegalArgumentException.class, () -> svc.savePath("../evil"));
+        assertThrows(IllegalArgumentException.class, () -> svc.savePath("a/b"));
+        assertThrows(IllegalArgumentException.class, () -> svc.savePath("a\\b"));
+        assertThrows(IllegalArgumentException.class, () -> svc.savePath(null));
+    }
+
+    @Test
+    void delete_removesSaveFile(@TempDir Path tempDir) throws Exception {
+        GameService svc = new GameService();
+        svc.dataDir = tempDir.toString();
+        svc.init();
+
+        svc.save(new Game("game1", "Game One"));
+        svc.saveChanges("game1", "data".getBytes());
+
+        svc.delete("game1");
+
+        assertFalse(Files.exists(tempDir.resolve("saves/game1.fschanges.jsdos")));
+    }
+
     // -- JSON serialization tests --
 
     @Test

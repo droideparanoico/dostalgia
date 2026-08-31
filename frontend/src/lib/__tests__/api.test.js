@@ -1,5 +1,12 @@
-import { describe, it, expect } from "vitest";
-import { artworkUrl, bundleUrl, setupBundleUrl } from "../api.js";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import {
+  artworkUrl,
+  bundleUrl,
+  setupBundleUrl,
+  pullSaves,
+  pushSaves,
+  deleteSaves,
+} from "../api.js";
 
 describe("artworkUrl", () => {
   it("returns null for null input", () => {
@@ -64,5 +71,115 @@ describe("setupBundleUrl", () => {
 
   it("handles games with numeric id", () => {
     expect(setupBundleUrl({ id: 42 })).toBe("/api/games/42/setup-bundle");
+  });
+});
+
+describe("pullSaves", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("returns null when there is no save (404)", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ status: 404, ok: false }));
+    await expect(pullSaves("game-1")).resolves.toBeNull();
+    expect(fetch).toHaveBeenCalledWith("/api/games/game-1/saves");
+  });
+
+  it("returns the raw bytes on success", async () => {
+    const bytes = new Uint8Array([1, 2, 3]);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        status: 200,
+        ok: true,
+        arrayBuffer: () => Promise.resolve(bytes.buffer),
+      })
+    );
+    await expect(pullSaves("game-1")).resolves.toEqual(bytes);
+  });
+
+  it("throws on server error", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        status: 500,
+        ok: false,
+        json: () => Promise.resolve({ error: "boom" }),
+      })
+    );
+    await expect(pullSaves("game-1")).rejects.toThrow("boom");
+  });
+});
+
+describe("pushSaves", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("PUTs the raw bundle to the saves endpoint", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      status: 200,
+      ok: true,
+      json: () => Promise.resolve({ status: "saved" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const data = new Uint8Array([9, 8, 7]);
+
+    await expect(pushSaves("game-1", data)).resolves.toEqual({
+      status: "saved",
+    });
+
+    const [url, opts] = fetchMock.mock.calls[0];
+    expect(url).toBe("/api/games/game-1/saves");
+    expect(opts.method).toBe("PUT");
+    expect(opts.headers["Content-Type"]).toBe("application/octet-stream");
+    expect(opts.body).toBe(data);
+  });
+
+  it("throws on server error", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        status: 400,
+        ok: false,
+        json: () => Promise.resolve({ error: "Empty save data" }),
+      })
+    );
+    await expect(pushSaves("game-1", new Uint8Array())).rejects.toThrow(
+      "Empty save data"
+    );
+  });
+});
+
+describe("deleteSaves", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("DELETEs the saves endpoint", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      status: 200,
+      ok: true,
+      json: () => Promise.resolve({ status: "deleted" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(deleteSaves("game-1")).resolves.toEqual({ status: "deleted" });
+    expect(fetchMock.mock.calls[0]).toEqual([
+      "/api/games/game-1/saves",
+      { method: "DELETE" },
+    ]);
+  });
+
+  it("throws on server error", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        status: 500,
+        ok: false,
+        json: () => Promise.resolve({ error: "boom" }),
+      })
+    );
+    await expect(deleteSaves("game-1")).rejects.toThrow("boom");
   });
 });
