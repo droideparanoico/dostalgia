@@ -3,7 +3,7 @@
 # See: https://docs.gitea.com/usage/actions
 
 name: Build & Deploy
-run-name: Build ${{ gitea.sha.substring(0, 7) }}
+run-name: Build ${{ gitea.sha }}
 
 on:
   push:
