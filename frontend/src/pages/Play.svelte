@@ -73,6 +73,7 @@
       dosCI = window.Dos(dosContainer, {
         url,
         autoSave: true,
+        renderAspect: "4/3",
         // Server-backed FS persistence: in-game saves survive sessions and
         // follow the player across browsers/devices. Both normal and setup
         // mode share one save set so SETUP.EXE changes carry over.
@@ -252,10 +253,6 @@
   }
   @media (max-width: 640px) {
     .dos-container { aspect-ratio: 4/3; max-height: 50vh; border-radius: var(--radius-sm); }
-  }
-  .dos-container :global(canvas) {
-    width: 100% !important;
-    height: 100% !important;
   }
 
   /* Overlay shown while loading / booting, covers the empty container */

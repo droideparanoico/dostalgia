@@ -97,6 +97,7 @@ describe("Play", () => {
       const opts = dosMock.mock.calls[0][1];
       expect(opts.url).toBe("/games/game-1.jsdos");
       expect(opts.autoSave).toBe(true);
+      expect(opts.renderAspect).toBe("4/3");
 
       // Both normal and setup bundles map to the same per-game save key
       await expect(opts.fsChanges.urlToKey("/games/game-1.jsdos")).resolves.toBe("game-1");
